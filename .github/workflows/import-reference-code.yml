@@ -44,7 +44,7 @@ jobs:
           cp /tmp/ref-import/weathernext/README.md references/GraphCast/README.md
           cp /tmp/ref-import/weathernext/setup.py references/GraphCast/setup.py
           rsync -a --delete /tmp/ref-import/weathernext/docs/weathernext1_graph/ references/GraphCast/docs/weathernext1_graph/
-          rsync -a --delete /tmp/ref-import/weathernext/weathernext1_graph/ references/GraphCast/weathernext/weathernext1_graph/
+          rsync -a --delete /tmp/ref-import/weathernext/weathernext/weathernext1_graph/ references/GraphCast/weathernext/weathernext1_graph/
           rsync -a --delete             --exclude='__pycache__/' --exclude='*.pyc'             /tmp/ref-import/weathernext/weathernext/utils/ references/GraphCast/weathernext/utils/
 
           # NOEM — Apache-2.0; keep source/configs, omit trained weights/results/data binaries.
