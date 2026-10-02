@@ -1,0 +1,9 @@
+[submodule "references/SIRE"]
+	path = references/SIRE
+	url = https://github.com/MIAGroupUT/SIRE.git
+[submodule "references/HAGMN-UQ"]
+	path = references/HAGMN-UQ
+	url = https://github.com/MIILab-MTU/HAGMN-UQ.git
+[submodule "references/VesselDiffusion"]
+	path = references/VesselDiffusion
+	url = https://github.com/gzq17/VesselDiffusion.git
