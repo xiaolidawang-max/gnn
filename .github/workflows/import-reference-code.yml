@@ -1,0 +1,100 @@
+name: Import reference research code
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/import-reference-code.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  import:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout target repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          submodules: false
+
+      - name: Configure git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+      - name: Import licensed reference source
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf /tmp/ref-import
+          mkdir -p /tmp/ref-import references
+
+          # DIMON — MIT
+          git clone --depth 1 https://github.com/MinglangYin/DIMON.git /tmp/ref-import/DIMON
+          mkdir -p references/DIMON
+          rsync -a --delete             --exclude='.git/'             --exclude='CheckPts/'             --exclude='*.pt' --exclude='*.pth'             --exclude='*.png' --exclude='*.jpg' --exclude='*.jpeg'             --exclude='*.pdf' --exclude='*.out'             /tmp/ref-import/DIMON/ references/DIMON/
+
+          # GraphCast is now maintained inside google-deepmind/weathernext — Apache-2.0
+          git clone --depth 1 https://github.com/google-deepmind/weathernext.git /tmp/ref-import/weathernext
+          mkdir -p references/GraphCast/docs references/GraphCast/weathernext
+          cp /tmp/ref-import/weathernext/LICENSE references/GraphCast/LICENSE
+          cp /tmp/ref-import/weathernext/README.md references/GraphCast/README.md
+          cp /tmp/ref-import/weathernext/setup.py references/GraphCast/setup.py
+          rsync -a --delete /tmp/ref-import/weathernext/docs/weathernext1_graph/ references/GraphCast/docs/weathernext1_graph/
+          rsync -a --delete /tmp/ref-import/weathernext/weathernext1_graph/ references/GraphCast/weathernext/weathernext1_graph/
+          rsync -a --delete             --exclude='__pycache__/' --exclude='*.pyc'             /tmp/ref-import/weathernext/weathernext/utils/ references/GraphCast/weathernext/utils/
+
+          # NOEM — Apache-2.0; keep source/configs, omit trained weights/results/data binaries.
+          git clone --depth 1 https://github.com/lu-group/noem.git /tmp/ref-import/NOEM
+          mkdir -p references/NOEM
+          rsync -a --delete             --exclude='.git/'             --exclude='*.pth' --exclude='*.pt' --exclude='*.ckpt*'             --exclude='*.png' --exclude='*.jpg' --exclude='*.jpeg'             --exclude='*.npy' --exclude='*.npz' --exclude='*.pkl'             --exclude='results/'             /tmp/ref-import/NOEM/ references/NOEM/
+
+      - name: Attach upstream repositories without explicit redistribution licenses
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf references/SIRE references/HAGMN-UQ references/VesselDiffusion
+          git rm -rf --ignore-unmatch references/SIRE references/HAGMN-UQ references/VesselDiffusion || true
+
+          git submodule add -f https://github.com/MIAGroupUT/SIRE.git references/SIRE
+          git submodule add -f https://github.com/MIILab-MTU/HAGMN-UQ.git references/HAGMN-UQ
+          git submodule add -f https://github.com/gzq17/VesselDiffusion.git references/VesselDiffusion
+
+      - name: Record upstream sources
+        shell: bash
+        run: |
+          cat > references/README.md <<'EOF'
+          # Reference implementations
+
+          This directory collects upstream research implementations used for studying vascular/physics GNNs and neural operators.
+
+          - DIMON: https://github.com/MinglangYin/DIMON — MIT
+          - GraphCast / WeatherNext: https://github.com/google-deepmind/weathernext — Apache-2.0
+          - NOEM: https://github.com/lu-group/noem — Apache-2.0
+          - SIRE: https://github.com/MIAGroupUT/SIRE — linked as a git submodule
+          - HAGMN-UQ: https://github.com/MIILab-MTU/HAGMN-UQ — linked as a git submodule
+          - VesselDiffusion: https://github.com/gzq17/VesselDiffusion — linked as a git submodule
+
+          The root repository also contains the imported reference implementation of:
+          - Physics-informed graph neural networks for flow field estimation in carotid arteries:
+            https://github.com/sukjulian/physics-informed-gnn — MIT
+
+          Clone with submodules:
+          ```bash
+          git clone --recursive https://github.com/xiaolidawang-max/gnn.git
+          ```
+          EOF
+
+      - name: Commit imported references
+        shell: bash
+        run: |
+          git add -A
+          if git diff --cached --quiet; then
+            echo "No changes to commit."
+          else
+            git commit -m "Import public research reference implementations"
+            git push origin HEAD:main
+          fi
