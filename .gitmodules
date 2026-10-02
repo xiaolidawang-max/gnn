@@ -7,3 +7,30 @@
 [submodule "references/VesselDiffusion"]
 	path = references/VesselDiffusion
 	url = https://github.com/gzq17/VesselDiffusion.git
+[submodule "references/gROM"]
+	path = references/gROM
+	url = https://github.com/StanfordCBCL/gROM.git
+[submodule "references/PIGNN-1D-Blood-Flow"]
+	path = references/PIGNN-1D-Blood-Flow
+	url = https://github.com/ahmetsenemse/PIGNN-1D-Blood-Flow-Simulation.git
+[submodule "references/MAgNET"]
+	path = references/MAgNET
+	url = https://github.com/saurabhdeshpande93/MAgNET.git
+[submodule "references/Adaptive-Multiscale-GNN"]
+	path = references/Adaptive-Multiscale-GNN
+	url = https://github.com/rperera12/Adaptive-mesh-based-Multiscale-Graph-Neural-Network.git
+[submodule "references/HydroGraphNet"]
+	path = references/HydroGraphNet
+	url = https://github.com/sandeepangh782/HydrographNet-PINN.git
+[submodule "references/operator-cow"]
+	path = references/operator-cow
+	url = https://github.com/Wojtyjot/operator-cow.git
+[submodule "references/coronary-mesh-convolution"]
+	path = references/coronary-mesh-convolution
+	url = https://github.com/sukjulian/coronary-mesh-convolution.git
+[submodule "references/LaB-GATr"]
+	path = references/LaB-GATr
+	url = https://github.com/sukjulian/lab-gatr.git
+[submodule "references/graph-physics"]
+	path = references/graph-physics
+	url = https://github.com/DonsetPG/graph-physics.git
