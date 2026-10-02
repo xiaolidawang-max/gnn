@@ -1,0 +1,113 @@
+name: Attach additional research references
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/attach-more-references.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  attach:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          submodules: false
+
+      - name: Configure git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+      - name: Attach repositories as lightweight submodules
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          add_link () {
+            name="$1"
+            url="$2"
+            path="$3"
+
+            sha="$(git ls-remote "$url" HEAD | awk '{print $1}')"
+            test -n "$sha"
+
+            # Remove any previous entry at the path.
+            git rm -rf --ignore-unmatch "$path" >/dev/null 2>&1 || true
+
+            git config -f .gitmodules --remove-section "submodule.$path" >/dev/null 2>&1 || true
+            git config -f .gitmodules "submodule.$path.path" "$path"
+            git config -f .gitmodules "submodule.$path.url" "$url"
+
+            git update-index --add --cacheinfo 160000,"$sha","$path"
+            echo "$name -> $path @ $sha"
+          }
+
+          add_link "Stanford gROM"             "https://github.com/StanfordCBCL/gROM.git"             "references/gROM"
+
+          add_link "PIGNN 1D blood flow"             "https://github.com/ahmetsenemse/PIGNN-1D-Blood-Flow-Simulation.git"             "references/PIGNN-1D-Blood-Flow"
+
+          add_link "MAgNET"             "https://github.com/saurabhdeshpande93/MAgNET.git"             "references/MAgNET"
+
+          add_link "Adaptive Multiscale GNN"             "https://github.com/rperera12/Adaptive-mesh-based-Multiscale-Graph-Neural-Network.git"             "references/Adaptive-Multiscale-GNN"
+
+          add_link "HydroGraphNet"             "https://github.com/sandeepangh782/HydrographNet-PINN.git"             "references/HydroGraphNet"
+
+          add_link "Neural Operator Transformer for cerebral hemodynamics"             "https://github.com/Wojtyjot/operator-cow.git"             "references/operator-cow"
+
+          add_link "SE(3) coronary mesh convolution"             "https://github.com/sukjulian/coronary-mesh-convolution.git"             "references/coronary-mesh-convolution"
+
+          add_link "LaB-GATr"             "https://github.com/sukjulian/lab-gatr.git"             "references/LaB-GATr"
+
+          add_link "Graph Physics"             "https://github.com/DonsetPG/graph-physics.git"             "references/graph-physics"
+
+          git add .gitmodules
+
+      - name: Update reference index
+        shell: bash
+        run: |
+          cat >> references/README.md <<'EOF'
+
+          ## Additional public implementations
+
+          - Stanford gROM — https://github.com/StanfordCBCL/gROM
+            - Learning reduced-order models for cardiovascular simulations with graph neural networks.
+          - PIGNN-1D-Blood-Flow — https://github.com/ahmetsenemse/PIGNN-1D-Blood-Flow-Simulation
+            - Physics-Informed Graph Neural Networks to Solve 1-D Equations of Blood Flow.
+          - MAgNET — https://github.com/saurabhdeshpande93/MAgNET
+            - Graph U-Net architecture for mesh-based simulations.
+          - Adaptive-Multiscale-GNN — https://github.com/rperera12/Adaptive-mesh-based-Multiscale-Graph-Neural-Network
+            - Adaptive/multiscale mesh GNN work by Perera and Agrawal.
+          - HydroGraphNet — https://github.com/sandeepangh782/HydrographNet-PINN
+            - Interpretable physics-informed GNN for fluid/flood dynamics.
+          - operator-cow — https://github.com/Wojtyjot/operator-cow
+            - Reconstructing cerebral hemodynamics from sparse data using Neural Operator Transformers.
+          - coronary-mesh-convolution — https://github.com/sukjulian/coronary-mesh-convolution
+            - SE(3)-equivariant coronary artery mesh learning.
+          - LaB-GATr — https://github.com/sukjulian/lab-gatr
+            - Geometric Algebra Transformer for large biomedical meshes.
+          - graph-physics — https://github.com/DonsetPG/graph-physics
+            - MeshGraphNet / Transformer / multigraph framework with aneurysm CFD examples.
+
+          These are linked as git submodules to preserve each upstream repository intact.
+          Run:
+          ```bash
+          git submodule update --init --recursive
+          ```
+          after cloning this repository.
+          EOF
+          git add references/README.md
+
+      - name: Commit
+        run: |
+          if git diff --cached --quiet; then
+            echo "No changes."
+          else
+            git commit -m "Attach additional public GNN and neural-operator references"
+            git push origin HEAD:main
+          fi
